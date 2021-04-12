@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<script>
+</script>
+<body>
+    <button id="zzz">getPDF</button>
+
+    <input id="eeeqweqw" type="number" onchange="pdfPageRendering(parseInt(this.value))"/>
+
+
+    <h1>'Hello, world!' example</h1>
+
+    <canvas id="the-canvas" style="border: 1px solid black; direction: ltr;"></canvas>
+
+    <script src="pdf.js"></script>
+
+    <script id="script">
+
+        pdfjsLib.GlobalWorkerOptions.workerSrc = 'pdf.worker.js';
+
+        //
+        // Asynchronous download PDF
+        //
+
+        function pdfPageRendering(pageNo=1){
+                //
+                // Fetch the first page
+                //
+            window.pdf.getPage(pageNo).then(function(page) {
+                var scale = 1.5;
+                var viewport = page.getViewport({ scale: scale, });
+
+                //
+                // Prepare canvas using PDF page dimensions
+                //
+                var canvas = document.getElementById('the-canvas');
+                var context = canvas.getContext('2d');
+                canvas.height = viewport.height;
+                canvas.width = viewport.width;
+
+                //
+                // Render PDF page into canvas context
+                //
+                var renderContext = {
+                    canvasContext: context,
+                    viewport: viewport,
+                };
+                page.render(renderContext);
+            });
+
+        }
+
+        //Get Json
+        function getJsonFile() {
+            console.log('call json')
+            // XMLHttpRequest 객체의 인스턴스를 생성합니다.
+            let xhr = new XMLHttpRequest();
+
+            // open() 메서드는 요청을 준비하는 메서드입니다. (http 메서드, 데이터를 받아올 URL 경로, 비동기 여부)
+            // xhr.open("GET", "./app_sample.json", true);
+            xhr.open("POST", "http://localhost:8080/", true);
+
+
+            xhr.onload = function () {
+                if (xhr.status === 200) {
+
+                    // let result = JSON.parse(xhr.responseText);
+                    let result = atob(xhr.responseText);
+
+                    // console.log( result );
+                    renderInit(result);
+                }
+            };
+            // xhr.send("search=alice");
+            xhr.send();
+
+        }
+
+
+        window.onload = function (){
+
+
+
+            document.getElementById("zzz").onclick = function(e){
+                console.log('btn clk');
+                getJsonFile();
+
+            }
+
+
+        }
+
+        function renderInit(result){
+            console.log('renderInit');
+            var loadingTask = pdfjsLib.getDocument({ data: result, });
+
+            loadingTask.promise.then(function(pdf){
+                window.pdf = pdf;
+                pdfPageRendering();
+            });
+
+        }
+
+    </script>
+
+
+
+</body>
+</html>
